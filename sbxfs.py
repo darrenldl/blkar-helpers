@@ -40,6 +40,7 @@ class SBXContained(Operations):
     def _contain(self, partial):
         full_path = self._full_path(partial)
         cont_path = self._cont_path(partial)
+        print("Encoding", partial)
         check_output("rsbx encode --force --sbx-version 17 --rs-data 10 --rs-parity 2 --burst 10 --pv 0 {} {}".format(full_path, cont_path), shell=True)
 
     def _file_hash(self, partial):
@@ -60,16 +61,26 @@ class SBXContained(Operations):
             full_path = self._full_path(partial)
             cont_path = self._cont_path(partial)
 
+            print("Opening", partial)
+
             cont_hash = check_output('rsbx show '+cont_path+' | grep "Hash" | awk \'{ print $5 }\'', shell=True).decode("utf-8").strip("\n")
             file_hash = self._file_hash(partial)
             if cont_hash != file_hash:
+                print("    File corruption detected, checking container integrity")
                 out = check_output('rsbx repair --skip-warning --pv 0 '+cont_path+' | grep "Number of blocks failed" | tr "\n" " " | awk \'{ print $8,$17 }\'', shell=True)
                 out = out.split()
                 failed_to_process = int(out[0])
                 failed_to_repair  = int(out[1])
-                if failed_to_process > 0:
-                    if failed_to_repair > 0:
+                if failed_to_process == 0:
+                    print("    Container does not require repair")
+                else:
+                    print("    Container requires repair")
+                    if failed_to_repair == 0:
+                        print("    Repair successful")
+                    else:
+                        print("    Failed to repair container")
                         return FuseOsError(errno.EIO)
+                print("    Replacing file with container data")
                 check_output('rsbx decode --force --pv 0 {} {}'.format(cont_path, full_path), shell=True)
 
     # Filesystem methods
