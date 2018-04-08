@@ -67,7 +67,7 @@ class SBXContained(Operations):
             file_hash = self._file_hash(partial)
             if cont_hash != file_hash:
                 print("    File corruption detected, checking container integrity")
-                out = check_output('rsbx repair --skip-warning --pv 0 '+cont_path+' | grep "Number of blocks failed" | tr "\n" " " | awk \'{ print $8,$17 }\'', shell=True)
+                out = check_output('rsbx repair --skip-warning --pv 0 '+cont_path+' | grep "Number of blocks failed" | tr "\n" " " | awk \'{ print $7,$16 }\'', shell=True)
                 out = out.split()
                 failed_to_process = int(out[0])
                 failed_to_repair  = int(out[1])
