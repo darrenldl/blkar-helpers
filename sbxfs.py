@@ -68,6 +68,10 @@ class SBXContained(Operations):
             if cont_hash != file_hash:
                 print("    File corruption detected, checking container integrity")
                 out = check_output('rsbx repair --skip-warning --pv 0 '+cont_path+' | grep "Number of blocks failed" | tr "\n" " " | awk \'{ print $7,$16 }\'', shell=True)
+                if out.decode("utf-8") == "":
+                    print("    Container cannot be repaired")
+                    return errno.EACCES
+
                 out = out.split()
                 failed_to_process = int(out[0])
                 failed_to_repair  = int(out[1])
@@ -79,7 +83,7 @@ class SBXContained(Operations):
                         print("    Repair successful")
                     else:
                         print("    Failed to repair container")
-                        return FuseOsError(errno.EIO)
+                        return errno.EACCES
                 print("    Replacing file with container data")
                 check_output('rsbx decode --force --pv 0 {} {}'.format(cont_path, full_path), shell=True)
 
@@ -182,8 +186,8 @@ class SBXContained(Operations):
 
     def open(self, path, flags):
         ret = self._repair(path)
-        #if ret != None:
-            #return ret
+        if ret != None:
+            return ret
         full_path = self._full_path(path)
         return os.open(full_path, flags)
 
