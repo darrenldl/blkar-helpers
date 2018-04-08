@@ -230,4 +230,7 @@ def main(root, mountpoint):
     FUSE(SBXContained(root), mountpoint, nothreads=True, foreground=True)
 
 if __name__ == '__main__':
+    if len(sys.argv) < 3:
+        print("Usage : sbxfs.py containerdir mountpoint")
+        sys.exit()
     main(sys.argv[1], sys.argv[2])
