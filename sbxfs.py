@@ -13,10 +13,17 @@ import sys
 import errno
 import hashlib
 
+from datetime import datetime
+
 from subprocess import check_output
 
 from fuse import FUSE, FuseOSError, Operations
 
+def time_now_str():
+    return datetime.now().strftime("%Y-%m-%d %H:%M")
+
+def log_action(action, file):
+    print("{:<10} {:<30}  [{}]".format(action, file, time_now_str()))
 
 class SBXContained(Operations):
     def __init__(self, root):
@@ -40,7 +47,7 @@ class SBXContained(Operations):
     def _contain(self, partial):
         full_path = self._full_path(partial)
         cont_path = self._cont_path(partial)
-        print("Encoding", partial)
+        log_action("Encoding", partial)
         check_output("rsbx encode --force --sbx-version 17 --rs-data 10 --rs-parity 2 --burst 10 --pv 0 {} {}".format(full_path, cont_path), shell=True)
 
     def _file_hash(self, partial):
@@ -61,7 +68,7 @@ class SBXContained(Operations):
             full_path = self._full_path(partial)
             cont_path = self._cont_path(partial)
 
-            print("Opening", partial)
+            log_action("Opening", partial)
 
             cont_hash = check_output('rsbx show '+cont_path+' | grep "Hash" | awk \'{ print $5 }\'', shell=True).decode("utf-8").strip("\n")
             file_hash = self._file_hash(partial)
