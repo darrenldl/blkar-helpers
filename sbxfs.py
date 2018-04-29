@@ -13,6 +13,8 @@ import sys
 import errno
 import hashlib
 
+import json
+
 from datetime import datetime
 
 from subprocess import check_output
@@ -70,19 +72,20 @@ class SBXContained(Operations):
 
             log_action("Opening", partial)
 
-            cont_hash = check_output('rsbx show '+cont_path+' | grep "Hash" | awk \'{ print $5 }\'', shell=True).decode("utf-8").strip("\n")
+            output = json.loads(check_output('rsbx show --json '+cont_path, shell=True))
+            cont_hash = output["blocks"][0]["hash"].split()[2]
             file_hash = self._file_hash(partial)
+
             if cont_hash != file_hash:
                 print("    File corruption detected, checking container integrity")
-                out = check_output('rsbx repair --skip-warning --pv 0 '+cont_path+' | grep "Number of blocks failed" | tr "\n" " " | awk \'{ print $7,$16 }\'', shell=True)
-                if out.decode("utf-8") == "":
+                output = json.loads(check_output('rsbx repair --json '+cont_path, shell=True))
+                if "stats" not in output:
                     print("    Container cannot be repaired")
                     return errno.EACCES
 
-                out = out.split()
-                failed_to_process = int(out[0])
-                failed_to_repair  = int(out[1])
-                if failed_to_process == 0:
+                failed_check     = int(output["stats"]["numberOfBlocksFailedCheck"])
+                failed_to_repair = int(output["stats"]["numberOfBlocksFailedToRepairData"])
+                if failed_check == 0:
                     print("    Container does not require repair")
                 else:
                     print("    Container requires repair")
