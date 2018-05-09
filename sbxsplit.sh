@@ -17,17 +17,18 @@ file_size=$(ls -l $in_file | awk '{ print $5 }')
 
 output=$(rsbx calc --json $file_size --sbx-version $sbx_version --rs-data $data_chunk --rs-parity $parity_chunk)
 
-data_block_count=$(echo $output | jq ".stats.dataOnlyBlockCount")
+data_block_count=$(echo $output | jq -r ".stats.dataOnlyBlockCount")
 block_set_size=$[$data_block_count / $data_chunk]
 
 echo $data_block_count
 echo $block_set_size
 
-output=$(rsbx encode -f --json $in_file $out_prefix.$in_file.tmp \
+output=$(rsbx encode --json $in_file $out_prefix.$in_file.tmp \
   --sbx-version $sbx_version --rs-data $data_chunk --rs-parity $parity_chunk --burst $block_set_size)
-
-if [[ $(echo $output | jq ".error") != "null" ]]; then
+error=$(echo $output | jq -r ".error")
+if [[ $error != "null" ]]; then
   echo "Error occured during encoding"
+  echo $error
   exit 1
 fi
 
@@ -47,3 +48,4 @@ done
 
 # clean up
 rm $out_prefix.$in_file.tmp
+
