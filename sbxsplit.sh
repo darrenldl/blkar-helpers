@@ -20,6 +20,9 @@ output=$(rsbx calc --json $file_size --sbx-version $sbx_version --rs-data $data_
 data_block_count=$(echo $output | jq ".stats.dataOnlyBlockCount")
 block_set_size=$[$data_block_count / $data_chunk]
 
+echo $data_block_count
+echo $block_set_size
+
 output=$(rsbx encode -f --json $in_file $out_prefix.$in_file.tmp \
   --sbx-version $sbx_version --rs-data $data_chunk --rs-parity $parity_chunk --burst $block_set_size)
 
@@ -34,10 +37,12 @@ for (( i=0; i < $data_chunk; i++ )); do
     bs=$sbx_block_size skip=$[$i * ($block_set_size + 1)] count=$[$block_set_size + 1] &>/dev/null
 done
 
+skip_base=$[$data_chunk * ($block_set_size + 1)]
+
 for (( i=0; i < $parity_chunk; i++ )); do
   chunk_index=$[$i + $data_chunk]
   dd if=$out_prefix.$in_file.tmp of=$out_prefix.part$chunk_index \
-    bs=$sbx_block_size skip=$[$chunk_index * $block_set_size] count=$block_set_size &>/dev/null
+    bs=$sbx_block_size skip=$[$i * $block_set_size + $skip_base] count=$block_set_size &>/dev/null
 done
 
 # clean up
