@@ -6,7 +6,7 @@ if (( $# < 2 )); then
 fi
 
 in_prefix=$1
-out_prefix=$2
+out_file=$2
 
 sbx_version=17
 sbx_block_size=512
@@ -56,3 +56,5 @@ if [[ $recorded_hash != $output_hash ]]; then
   exit 1
 fi
 
+# clean up
+rm -rf $out_container
