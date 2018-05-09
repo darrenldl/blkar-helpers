@@ -20,9 +20,6 @@ output=$(rsbx calc --json $file_size --sbx-version $sbx_version --rs-data $data_
 data_block_count=$(echo $output | jq -r ".stats.dataOnlyBlockCount")
 block_set_size=$[$data_block_count / $data_chunk]
 
-echo $data_block_count
-echo $block_set_size
-
 output=$(rsbx encode --json $in_file $out_prefix.$in_file.tmp \
   --sbx-version $sbx_version --rs-data $data_chunk --rs-parity $parity_chunk --burst $block_set_size)
 error=$(echo $output | jq -r ".error")
