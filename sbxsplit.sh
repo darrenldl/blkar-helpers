@@ -20,6 +20,7 @@ output=$(rsbx calc --json $file_size --sbx-version $sbx_version --rs-data $data_
 data_block_count=$(echo $output | jq -r ".stats.dataOnlyBlockCount")
 block_set_size=$[$data_block_count / $data_chunk]
 
+echo "Encoding file"
 output=$(rsbx encode --json $in_file $out_prefix.$in_file.tmp \
   --sbx-version $sbx_version --rs-data $data_chunk --rs-parity $parity_chunk --burst $block_set_size)
 error=$(echo $output | jq -r ".error")
@@ -30,6 +31,7 @@ if [[ $error != "null" ]]; then
 fi
 
 # split the file
+echo "Splitting container"
 for (( i=0; i < $data_chunk; i++ )); do
   dd if=$out_prefix.$in_file.tmp of=$out_prefix.part$i \
     bs=$sbx_block_size skip=$[$i * ($block_set_size + 1)] count=$[$block_set_size + 1] &>/dev/null
@@ -44,5 +46,6 @@ for (( i=0; i < $parity_chunk; i++ )); do
 done
 
 # clean up
+echo "Cleaning up"
 rm $out_prefix.$in_file.tmp
 

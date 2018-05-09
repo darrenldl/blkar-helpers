@@ -57,4 +57,5 @@ if [[ $recorded_hash != $output_hash ]]; then
 fi
 
 # clean up
+echo "Cleaning up"
 rm -rf $out_container
