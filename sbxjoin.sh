@@ -22,23 +22,23 @@ for file in $in_prefix.part*.sbx; do
   output=$(rsbx sort --json $file $file.sorted)
   error=$(echo $output | jq -r ".error")
   if [[ $error != null ]]; then
-    echo "Error occured during sorting"
-    echo $error
+    echo "    Error occured during sorting"
+    echo "    $error"
     exit 1
   fi
 
   output=$(rsbx repair --json $file.sorted)
   error=$(echo $output | jq -r ".error")
   if [[ $error != null ]]; then
-    echo "Error occured during repairing"
-    echo $error
+    echo "    Error occured during repairing"
+    echo "    $error"
     exit 1
   fi
 
   output=$(rsbx decode --json $file.sorted)
   if [[ $error != "null" ]]; then
-    echo "Error occured during encoding"
-    echo $error
+    echo "    Error occured during encoding"
+    echo "    $error"
     exit 1
   fi
 
@@ -46,7 +46,7 @@ for file in $in_prefix.part*.sbx; do
   output_hash=$(echo $output | jq -r ".stats.hashOfOutputFile")
 
   if [[ $recorded_hash != $output_hash ]]; then
-    echo "Error : hash mismatch for $file"
+    echo "    Error : hash mismatch for $file"
     exit 1
   fi
 
@@ -69,8 +69,8 @@ echo "Sorting container"
 output=$(rsbx sort --json $out_container $out_container.sorted)
 error=$(echo $output | jq -r ".error")
 if [[ $error != null ]]; then
-  echo "Error occured during sorting"
-  echo $error
+  echo "  Error occured during sorting"
+  echo "  $error"
   exit 1
 fi
 
@@ -80,8 +80,8 @@ echo "Repairing container"
 output=$(rsbx repair --json $out_container)
 error=$(echo $output | jq -r ".error")
 if [[ $error != null ]]; then
-  echo "Error occured during repairing"
-  echo $error
+  echo "  Error occured during repairing"
+  echo "  $error"
   exit 1
 fi
 repairs_failed=$(echo $output | jq -r ".stats.numberOfBlocksFailedToRepairData")
@@ -94,8 +94,8 @@ echo "Decoding container"
 output=$(rsbx decode --json $out_container $out_file)
 error=$(echo $output | jq -r ".error")
 if [[ $error != null ]]; then
-  echo "Error occured during decoding"
-  echo $error
+  echo "  Error occured during decoding"
+  echo "  $error"
   exit 1
 fi
 
@@ -104,9 +104,9 @@ output_hash=$(echo $output | jq -r ".stats.hashOfOutputFile")
 
 echo "Checking hash"
 if [[ $recorded_hash != $output_hash ]]; then
-  echo "Error : Output file hash mismatch"
-  echo "Recorded    hash : $recorded_hash"
-  echo "Output file hash : $output_hash"
+  echo "  Error : Output file hash mismatch"
+  echo "  Recorded    hash : $recorded_hash"
+  echo "  Output file hash : $output_hash"
   exit 1
 fi
 
