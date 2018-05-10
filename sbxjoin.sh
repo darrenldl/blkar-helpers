@@ -84,12 +84,17 @@ if [[ $error != null ]]; then
   echo $error
   exit 1
 fi
+repairs_failed=$(echo $output | jq -r ".stats.numberOfBlocksFailedToRepairData")
+if (( $repairs_failed > 0 )); then
+  echo "  Failed to repair container"
+  echo "  The decoded data will have missing data"
+fi
 
 echo "Decoding container"
 output=$(rsbx decode --json $out_container $out_file)
 error=$(echo $output | jq -r ".error")
 if [[ $error != null ]]; then
-  echo "Error occured during repairing"
+  echo "Error occured during decoding"
   echo $error
   exit 1
 fi
@@ -97,8 +102,11 @@ fi
 recorded_hash=$(echo $output | jq -r ".stats.recordedHash")
 output_hash=$(echo $output | jq -r ".stats.hashOfOutputFile")
 
+echo "Checking hash"
 if [[ $recorded_hash != $output_hash ]]; then
   echo "Error : Output file hash mismatch"
+  echo "Recorded    hash : $recorded_hash"
+  echo "Output file hash : $output_hash"
   exit 1
 fi
 
