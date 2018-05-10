@@ -21,7 +21,7 @@ echo "Decoding parts"
 for file in $in_prefix.part+([0-9]).sbx; do
   echo "  Decoding $file"
 
-  output=$(rsbx sort --json $file $file.sorted)
+  output=$(rsbx sort --json $file $file.sorted --burst 0)
   error=$(echo $output | jq -r ".error")
   if [[ $error != null ]]; then
     echo "    Error occured during sorting"
@@ -64,7 +64,7 @@ for file in $in_prefix.part+([0-9]); do
 done
 
 echo "Sorting container"
-output=$(rsbx sort --json $out_container $out_container.sorted)
+output=$(rsbx sort --json $out_container $out_container.sorted --burst 0)
 error=$(echo $output | jq -r ".error")
 if [[ $error != null ]]; then
   echo "  Error occured during sorting"
