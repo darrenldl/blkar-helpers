@@ -1,5 +1,7 @@
 #!/bin/bash
 
+shopt -s extglob
+
 if (( $# < 2 )); then
   echo "Usage : in_prefix out_file"
   exit 1
@@ -16,7 +18,7 @@ rm -rf $out_container
 
 echo "Decoding parts"
 
-for file in $in_prefix.part*.sbx; do
+for file in $in_prefix.part+([0-9]).sbx; do
   echo "  Decoding $file"
 
   output=$(rsbx sort --json $file $file.sorted)
@@ -54,11 +56,7 @@ for file in $in_prefix.part*.sbx; do
 done
 
 echo "Concatenating parts"
-for file in $in_prefix.part*; do
-  if [[ $file == *.sbx ]]; then
-    continue
-  fi
-
+for file in $in_prefix.part+([0-9]); do
   echo "  Adding $file to final container"
 
   cat $file >> $out_container

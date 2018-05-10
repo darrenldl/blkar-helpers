@@ -1,5 +1,7 @@
 #!/bin/bash
 
+shopt -s extglob
+
 if (( $# < 4 )); then
   echo "Usage : in_file out_prefix data_chunk parity_chunk"
   exit 1
@@ -55,11 +57,7 @@ done
 
 echo "Encoding parts"
 
-for file in $out_prefix.part*; do
-  if [[ $file == *.sbx ]]; then
-    continue
-  fi
-
+for file in $out_prefix.part+([0-9]); do
   echo "  Encoding $file"
 
   output=$(rsbx encode --json $file \
