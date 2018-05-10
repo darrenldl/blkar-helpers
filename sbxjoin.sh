@@ -14,8 +14,10 @@ sbx_block_size=512
 out_container=$in_prefix.$out_file.tmp
 rm -rf $out_container
 
+echo "Decoding parts"
+
 for file in $in_prefix.part*.sbx; do
-  echo "Decoding $file"
+  echo "  Decoding $file"
 
   output=$(rsbx sort --json $file $file.sorted)
   error=$(echo $output | jq -r ".error")
@@ -56,6 +58,8 @@ for file in $in_prefix.part*; do
   if [[ $file == *.sbx ]]; then
     continue
   fi
+
+  echo "  Adding $file to final container"
 
   cat $file >> $out_container
   rm $file
