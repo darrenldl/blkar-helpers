@@ -61,7 +61,7 @@ for file in $out_prefix.part+([0-9]); do
   echo "  Encoding $file"
 
   output=$(rsbx encode --json $file \
-    --sbx-version 17 --rs-data 10 --rs-parity 1 --burst 10)
+    --sbx-version 17 --rs-data 10 --rs-parity 2 --burst 10)
   error=$(echo $output | jq -r ".error")
   if [[ $error != "null" ]]; then
     echo "Error occured during encoding"
