@@ -14,9 +14,51 @@ sbx_block_size=512
 out_container=$in_prefix.$out_file.tmp
 rm -rf $out_container
 
+for file in $in_prefix.part*.sbx; do
+  echo "Decoding $file"
+
+  output=$(rsbx sort --json $file $file.sorted)
+  error=$(echo $output | jq -r ".error")
+  if [[ $error != null ]]; then
+    echo "Error occured during sorting"
+    echo $error
+    exit 1
+  fi
+
+  output=$(rsbx repair --json $file.sorted)
+  error=$(echo $output | jq -r ".error")
+  if [[ $error != null ]]; then
+    echo "Error occured during repairing"
+    echo $error
+    exit 1
+  fi
+
+  output=$(rsbx decode --json $file.sorted)
+  if [[ $error != "null" ]]; then
+    echo "Error occured during encoding"
+    echo $error
+    exit 1
+  fi
+
+  recorded_hash=$(echo $output | jq -r ".stats.recordedHash")
+  output_hash=$(echo $output | jq -r ".stats.hashOfOutputFile")
+
+  if [[ $recorded_hash != $output_hash ]]; then
+    echo "Error : hash mismatch for $file"
+    exit 1
+  fi
+
+  rm $file.sorted
+done
+
 echo "Concatenating parts"
 for file in $in_prefix.part*; do
+  if [[ $file == *.sbx ]]; then
+    continue
+  fi
+
   cat $file >> $out_container
+  rm $file
 done
 
 echo "Sorting container"
@@ -59,3 +101,4 @@ fi
 # clean up
 echo "Cleaning up"
 rm -rf $out_container
+

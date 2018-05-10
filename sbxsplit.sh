@@ -33,7 +33,11 @@ fi
 # split the file
 echo "Splitting container"
 for (( i=0; i < $data_chunk; i++ )); do
-  dd if=$out_prefix.$in_file.tmp of=$out_prefix.part$i \
+  out_part=$out_prefix.part$i
+
+  echo "  Creating $out_part"
+
+  dd if=$out_prefix.$in_file.tmp of=$out_part \
     bs=$sbx_block_size skip=$[$i * ($block_set_size + 1)] count=$[$block_set_size + 1] &>/dev/null
 done
 
@@ -41,8 +45,32 @@ skip_base=$[$data_chunk * ($block_set_size + 1)]
 
 for (( i=0; i < $parity_chunk; i++ )); do
   chunk_index=$[$i + $data_chunk]
-  dd if=$out_prefix.$in_file.tmp of=$out_prefix.part$chunk_index \
+  out_part=$out_prefix.part$chunk_index
+
+  echo "  Creating $out_part"
+
+  dd if=$out_prefix.$in_file.tmp of=$out_part \
     bs=$sbx_block_size skip=$[$i * $block_set_size + $skip_base] count=$block_set_size &>/dev/null
+done
+
+echo "Encoding parts"
+
+for file in $out_prefix.part*; do
+  if [[ $file == *.sbx ]]; then
+    continue
+  fi
+
+  echo "  Encoding $file"
+
+  output=$(rsbx encode --json $file \
+    --sbx-version 17 --rs-data 10 --rs-parity 2 --burst 10)
+  error=$(echo $output | jq -r ".error")
+  if [[ $error != "null" ]]; then
+    echo "Error occured during encoding"
+    echo $error
+    exit 1
+  fi
+  rm $file
 done
 
 # clean up
