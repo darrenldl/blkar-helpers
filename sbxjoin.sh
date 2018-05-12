@@ -62,6 +62,7 @@ for file in $in_prefix.part+([0-9]); do
     echo "  Adding $file to final container"
 
     cat $file >> $out_container
+
     if [ -f $file.sbx ]; then
         rm $file
     fi
@@ -115,4 +116,3 @@ fi
 # clean up
 echo "Cleaning up"
 rm -rf $out_container
-
