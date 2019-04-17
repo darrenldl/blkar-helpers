@@ -12,7 +12,8 @@ When in doubt or when you need to be very certain things do work, invoke rsbx di
 
 `ecsbxfs.py`
 
-- Uses Python 3 + FUSE to encoding files using blkar
+- Uses Python 3 + FUSE to encode files using blkar
+- Requires [`fusepy`](https://github.com/fusepy/fusepy) to be installed
 - Heavily inspired by [Thanassis Tsiodras's Reed-Solomon FS](https://www.thanassis.space/rsbep.html)
 
 ## License
