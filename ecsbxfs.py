@@ -50,7 +50,7 @@ class SBXContained(Operations):
         full_path = self._full_path(partial)
         cont_path = self._cont_path(partial)
         log_action("Encoding", partial)
-        check_output("rsbx encode --force --sbx-version 17 --rs-data 10 --rs-parity 2 --burst 10 --pv 0 {} {}".format(full_path, cont_path), shell=True)
+        check_output("blkar encode --force --sbx-version 17 --rs-data 10 --rs-parity 2 --burst 10 --pv 0 {} {}".format(full_path, cont_path), shell=True)
 
     def _file_hash(self, partial):
         BUF_SIZE = 65536
@@ -72,13 +72,13 @@ class SBXContained(Operations):
 
             log_action("Opening", partial)
 
-            output = json.loads(check_output('rsbx show --json '+cont_path, shell=True))
+            output = json.loads(check_output('blkar show --json '+cont_path, shell=True))
             cont_hash = output["blocks"][0]["hash"].split()[2]
             file_hash = self._file_hash(partial)
 
             if cont_hash != file_hash:
                 print("    File corruption detected, checking container integrity")
-                output = json.loads(check_output('rsbx repair --json '+cont_path, shell=True))
+                output = json.loads(check_output('blkar repair --json '+cont_path, shell=True))
                 if "stats" not in output:
                     print("    Container cannot be repaired")
                     return errno.EACCES
@@ -95,7 +95,7 @@ class SBXContained(Operations):
                         print("    Failed to repair container")
                         return errno.EACCES
                 print("    Replacing file with container data")
-                check_output('rsbx decode --force --pv 0 {} {}'.format(cont_path, full_path), shell=True)
+                check_output('blkar decode --force --pv 0 {} {}'.format(cont_path, full_path), shell=True)
 
     # Filesystem methods
     # ==================
@@ -132,7 +132,7 @@ class SBXContained(Operations):
         if os.path.isdir(full_path):
             dirents.extend(os.listdir(full_path))
         for r in dirents:
-            if not r.endswith(".sbxfs.sbx"):
+            if not r.endswith(".ecsbxfs.ecsbx"):
                 yield r
 
     def readlink(self, path):
@@ -234,6 +234,6 @@ def main(root, mountpoint):
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print("Usage : sbxfs.py containerdir mountpoint")
+        print("Usage : ecsbxfs.py container_dir mount_point")
         sys.exit()
     main(sys.argv[1], sys.argv[2])
